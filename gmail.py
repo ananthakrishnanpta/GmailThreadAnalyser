@@ -1,48 +1,40 @@
-import email, getpass, imaplib, os
+import imaplib
+import getpass
+import email
+import datetime
+import re
+import smtplib
 
-detach_dir = '.' # directory where to save attachments (default: current)
-user = raw_input("Enter your GMail username:")
-pwd = getpass.getpass("Enter your password: ")
+#opening the excel sheet
 
-# connecting to the gmail imap server
-m = imaplib.IMAP4_SSL("imap.gmail.com")
-m.login(user,pwd)
-m.select("cs2043") # here you a can choose a mail box like INBOX instead
-# use m.list() to get all the mailboxes
+from openpyxl import *
+wb = load_workbook(filename='mbrs.xlsx', read_only=False)
+ws = wb.active  # ws is now an IterableWorksheet
 
-resp, items = m.search(None, "ALL") # you could filter using the IMAP rules here (check http://www.example-code.com/csharp/imap-search-critera.asp)
-items = items[0].split() # getting the mails id
+#logging in
 
-for emailid in items:
-    resp, data = m.fetch(emailid, "(RFC822)") # fetching the mail, "`(RFC822)`" means "get the whole stuff", but you can ask for headers only, etc
-    email_body = data[0][1] # getting the mail content
-    mail = email.message_from_string(email_body) # parsing the mail content to get a mail object
+user = raw_input("GMail :- ")
+pwd = getpass.getpass()
+ 
+mail = imaplib.IMAP4_SSL('imap.gmail.com')
+mail.login(user,pwd)
+mail.list()
+mail.select("inbox")
 
-    #Check if any attachments at all
-    if mail.get_content_maintype() != 'multipart':
-        continue
 
-    print "["+mail["From"]+"] :" + mail["Subject"]
 
-    # we use walk to create a generator so we can iterate on the parts and forget about the recursive headach
-    for part in mail.walk():
-        # multipart are just containers, so we skip them
-        if part.get_content_maintype() == 'multipart':
-            continue
-
-        # is this part an attachment ?
-        if part.get('Content-Disposition') is None:
-            continue
-
-        #filename = part.get_filename()
-
-        filename = mail["From"] + "_hw1answer"
+for col in ws.iter_cols(min_row=1,max_col=1, max_row = 3):
+    for cell in col:
+        mbr = str(cell.value)
+        print("%s"%(mbr))
         
-        att_path = os.path.join(detach_dir, filename)
-
-        #Check if its already there
-        if not os.path.isfile(att_path) :
-            # finally write the stuff
-            fp = open(att_path, 'wb')
-            fp.write(part.get_payload(decode=True))
-            fp.close()
+        result, data = mail.search(None, '(FROM mbr)')
+        #result, data = mail.search(None, '(FROM "jeskris0@gmail.com")')
+        ids = data[0] # data is a list.
+        id_list = ids.split() # ids is a space separated string
+        latest_email_id = id_list[-1]#get the latest 
+        result, data = mail.fetch(latest_email_id, "RFC822") # fetch the email body (RFC822) for the given ID
+        raw_email = data[0][1] 
+        email_message = email.message_from_string(raw_email)
+        print email.utils.parseaddr(email_message['From'])
+        print email_message.items()
