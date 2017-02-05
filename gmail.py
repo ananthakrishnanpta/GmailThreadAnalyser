@@ -23,28 +23,37 @@ mail.select("inbox")
 
 
 
-for col in ws.iter_cols(min_row=1,max_col=1, max_row = 3):
+for col in ws.iter_cols(min_row=1,max_col=1, max_row = 4):
     for cell in col:
         mbr = str(cell.value)
         print("%s"%(mbr))
         
-        result, data = mail.search(None, '(SUBJECT "Weekly")')
-        #result, data = mail.search(None, '(FROM "foss-2016@googlegroups.com")')
-        ids = data[0] # data is a list.
-        id_list = ids.split() # ids is a space separated string
-        latest_email_id = id_list[-1]#get the latest 
-        result, data = mail.fetch(latest_email_id, "RFC822") # fetch the email body (RFC822) for the given ID
-        raw_email = data[0][1] 
-        email_message = email.message_from_string(raw_email)
-        print email.utils.parseaddr(email_message['From'])
-        print email_message.items()
+        try:
+            var = '(SUBJECT "Weekly status update" FROM "' + mbr +'")'
+            #result, data = mail.search(None, '(SUBJECT "foss" FROM "abhinand4858@gmail.com")')
+            result, data = mail.search(None, var)
+            ids = data[0] # data is a list.
+            id_list = ids.split() # ids is a space separated string
+            latest_email_id = id_list[-1]#get the latest 
+            result, data = mail.fetch(latest_email_id, "RFC822") # fetch the email body (RFC822) for the given ID
+            raw_email = data[0][1] 
+            email_message = email.message_from_string(raw_email)
+            #print email.utils.parseaddr(email_message['From'])
+            #print email_message.items()
+            #write "yes" into the adjacent cell
+            ws.cell(row=cell.row, column=2).value= "yes"
+            
+            
+        except:
+            
+            #write "no" to adjacent cell
+            print("nothing from this e-mail")
+            ws.cell(row=cell.row, column=2).value= "no"
         
         
-        
-        
-        
-        
-"""from openpyxl import Workbook
+wb.save("mbrs.xlsx")
+"""
+from openpyxl import Workbook
 wb = Workbook()
 
 # grab the active worksheet
