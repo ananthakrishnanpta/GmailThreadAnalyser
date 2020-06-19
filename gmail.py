@@ -30,7 +30,7 @@ for col in ws.iter_cols(min_row=1,max_col=1, max_row = 4):
         
         try:
             var = '(SUBJECT "Weekly status update" FROM "' + mbr +'")'
-            #result, data = mail.search(None, '(SUBJECT "foss" FROM "abhinand4858@gmail.com")')
+            #result, data = mail.search(None, '(SUBJECT "foss" FROM "kris4858@gmail.com")')
             result, data = mail.search(None, var)
             ids = data[0] # data is a list.
             id_list = ids.split() # ids is a space separated string
@@ -59,13 +59,13 @@ wb = Workbook()
 # grab the active worksheet
 ws = wb.active
 
-# Data can be assigned directly to cells
+# Data assigned directly to cells
 ws['A1'] = 42
 
-# Rows can also be appended
+# Rows appended
 ws.append([1, 2, 3])
 
-# Python types will automatically be converted
+# Python types automatically converted
 import datetime
 ws['A2'] = datetime.datetime.now()
 
